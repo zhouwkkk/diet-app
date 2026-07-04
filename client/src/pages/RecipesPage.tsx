@@ -25,10 +25,13 @@ export default function RecipesPage() {
   const navigate = useNavigate();
 
   const loadRecipes = async () => {
-    setLoading(true);
+  console.log("开始加载菜谱");
+  setLoading(true);
     try {
       const res = await recipeApi.list({ category, search, limit: 50 });
+      console.log(res.data);
       setRecipeList(res.data?.data?.recipes || []);
+      console.log(res.data.data.recipes[0]);
     } catch { /* ignore */ }
     setLoading(false);
   };
@@ -94,7 +97,9 @@ export default function RecipesPage() {
               onClick={() => toast('查看详情（开发中）')}>
               {/* 菜谱图 */}
               <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-3xl shrink-0">
-                {(recipe as any).emoji || '🍽️'}
+                <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-3xl">
+  {recipe.imageUrl || (recipe as any).emoji || "🍽️"}
+</div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
@@ -110,9 +115,17 @@ export default function RecipesPage() {
                   <span className="tag-green">{recipe.difficulty === 'easy' ? '简单' : recipe.difficulty === 'medium' ? '中等' : '困难'}</span>
                 </div>
                 <div className="flex gap-1 mt-2 flex-wrap">
-                  {recipe.tags?.slice(0, 3).map(tag => (
-                    <span key={tag} className="tag-blue text-xs">{tag}</span>
-                  ))}
+                 {(() => {
+  const tags = typeof recipe.tags === "string"
+    ? JSON.parse(recipe.tags)
+    : recipe.tags || [];
+
+  return tags.slice(0, 3).map((tag: string) => (
+    <span key={tag} className="tag-blue text-xs">
+      {tag}
+    </span>
+  ));
+})()}
                 </div>
               </div>
             </div>

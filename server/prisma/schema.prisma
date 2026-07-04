@@ -65,8 +65,9 @@ model UserProfile {
 
 model Recipe {
   id           String   @id @default(uuid())
-  userId       String?  @map("user_id")
+  userId       String?  @map("user_id") 
   name         String
+   emoji        String?  @default("🍽️")
   imageUrl     String?  @map("image_url")
   category     String   // breakfast / lunch / dinner / snack
   tags         String   @default("[]")

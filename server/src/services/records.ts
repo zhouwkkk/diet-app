@@ -35,7 +35,15 @@ export async function getRecords(userId: string, params: {
   const [records, total] = await Promise.all([
     prisma.cookingRecord.findMany({
       where,
-      include: { recipe: { select: { id: true, name: true, emoji: true } } },
+      include: {
+  recipe: {
+    select: {
+      id: true,
+      name: true,
+      imageUrl: true
+    }
+  }
+},
       orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       skip: (page - 1) * limit,
       take: limit,
@@ -60,7 +68,15 @@ export async function getTodayRecords(userId: string, date?: string) {
     },
     include: {
       recipe: {
-        select: { id: true, name: true, emoji: true, calories: true, protein: true, carbs: true, fat: true, imageUrl: true },
+        select: {
+  id: true,
+  name: true,
+  calories: true,
+  protein: true,
+  carbs: true,
+  fat: true,
+  imageUrl: true,
+},
       },
     },
     orderBy: { createdAt: 'asc' },

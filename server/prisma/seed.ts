@@ -288,8 +288,8 @@ async function main() {
 }
 
 main()
-  .catch(e => {
-    console.error('❌ 播种失败:', e);
-    process.exit(1);
-  })
+ .catch((e: any) => {
+  console.error("❌ 播种失败：", e);
+  process.exit(1);
+})
   .finally(() => prisma.$disconnect());
