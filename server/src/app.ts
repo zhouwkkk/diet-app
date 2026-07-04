@@ -16,6 +16,7 @@
 
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from './config/index.js';
@@ -65,10 +66,14 @@ app.use('/api/ai', aiRoutes);
 // ============ 生产环境：托管前端静态文件 ============
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.resolve(__dirname, '../../client/dist');
-  app.use(express.static(clientDist));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
-  });
+  const clientIndex = path.join(clientDist, 'index.html');
+
+  if (fs.existsSync(clientIndex)) {
+    app.use(express.static(clientDist));
+    app.get('*', (_req, res) => {
+      res.sendFile(clientIndex);
+    });
+  }
 }
 
 // ============ 全局错误处理 ============
