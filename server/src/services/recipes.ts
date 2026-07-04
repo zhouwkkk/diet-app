@@ -134,7 +134,15 @@ export async function updateRecipe(id: string, userId: string, data: Partial<Rec
   if (!recipe) throw new Error('菜谱不存在');
   if (recipe.userId !== userId) throw new Error('无权修改此菜谱');
 
-  return prisma.recipe.update({ where: { id }, data });
+  return prisma.recipe.update({
+    where: { id },
+    data: {
+      ...data,
+      tags: data.tags ? JSON.stringify(data.tags) : undefined,
+      ingredients: data.ingredients ? JSON.stringify(data.ingredients) : undefined,
+      seasonings: data.seasonings ? JSON.stringify(data.seasonings) : undefined,
+    },
+  });
 }
 
 // ============ 删除菜谱 ============

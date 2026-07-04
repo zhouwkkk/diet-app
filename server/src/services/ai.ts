@@ -437,7 +437,7 @@ async function processChat(
       responses.push(`🔍 根据你提供的食材（${extractedIngredients.join('、')}），我帮你找到了以下可以做的菜：`);
       data = { type: 'fridge', result };
     } else {
-      responses.push(result.error);
+      responses.push((result as { error: string }).error);
     }
   }
 
@@ -449,8 +449,8 @@ async function processChat(
     data = { type: 'recommendation', result: rec };
 
     // 加入一条随机模板文案
-    if (mealType && MEAL_TEMPLATES[mealType]) {
-      const templates = MEAL_TEMPLATES[mealType];
+    if (mealType && MEAL_TEMPLATES[mealType as keyof typeof MEAL_TEMPLATES]) {
+      const templates = MEAL_TEMPLATES[mealType as keyof typeof MEAL_TEMPLATES];
       responses.splice(0, 0, templates[Math.floor(Math.random() * templates.length)]);
     } else {
       responses.splice(0, 0, `Hi ${userName}！让我帮你看看今天吃什么～`);
