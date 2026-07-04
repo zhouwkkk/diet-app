@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  }
+}
+
+@layer components {
+  .page-content {
+    @apply px-4 py-4 pb-24 max-w-lg mx-auto;
+  }
+  .card {
+    @apply bg-white rounded-xl shadow-sm p-4;
+  }
+  .btn-primary {
+    @apply bg-primary-500 text-white px-6 py-2.5 rounded-full font-medium active:bg-primary-600 transition-colors disabled:opacity-50;
+  }
+  .btn-outline {
+    @apply border border-primary-500 text-primary-600 px-6 py-2.5 rounded-full font-medium active:bg-primary-50 transition-colors;
+  }
+  .btn-ghost {
+    @apply text-gray-500 px-4 py-2 rounded-full font-medium active:bg-gray-100 transition-colors;
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none transition-all;
+  }
+  .tag {
+    @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .tag-green {
+    @apply tag bg-primary-100 text-primary-700;
+  }
+  .tag-orange {
+    @apply tag bg-orange-100 text-orange-700;
+  }
+  .tag-blue {
+    @apply tag bg-blue-100 text-blue-700;
+  }
+  .tab {
+    @apply px-4 py-2 text-sm font-medium rounded-full transition-colors;
+  }
+  .tab-active {
+    @apply tab bg-primary-500 text-white;
+  }
+  .tab-inactive {
+    @apply tab text-gray-500 active:bg-gray-100;
+  }
+}

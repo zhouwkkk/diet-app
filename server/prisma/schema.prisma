@@ -1,0 +1,272 @@
+// Prisma Schema for 减脂餐管理 App
+// 数据库: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户 & 资料 ====================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  profile           UserProfile?
+  recipes           Recipe[]
+  cookingRecords    CookingRecord[]
+  mealPlans         MealPlan[]
+  inventory         Inventory[]
+  shoppingLists     ShoppingList[]
+  weightRecords     WeightRecord[]
+  waterRecords      WaterRecord[]
+  reminderSetting   ReminderSetting?
+  budget            Budget?
+  achievements      Achievement[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique @map("user_id")
+  gender         String   // male / female / other
+  age            Int
+  height         Float    @map("height")
+  currentWeight  Float    @map("current_weight")
+  targetWeight   Float    @map("target_weight")
+  weeklyLossGoal Float    @map("weekly_loss_goal")
+  weeklyExercise Int      @map("weekly_exercise")
+  activityLevel  String   @map("activity_level") // sedentary / light / moderate / active / very_active
+  bmr            Int
+  tdee           Int
+  dailyCalories  Int      @map("daily_calories")
+  dailyProtein   Int      @map("daily_protein")
+  dailyCarbs     Int      @map("daily_carbs")
+  dailyFat       Int      @map("daily_fat")
+  waterTarget    Int      @default(2000) @map("water_target")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// ==================== 菜谱 ====================
+
+model Recipe {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  name         String
+  imageUrl     String?  @map("image_url")
+  category     String   // breakfast / lunch / dinner / snack
+  tags         String   @default("[]")
+  ingredients  String   @default("[]")
+  seasonings   String?
+  instructions String
+  cookTime     Int      @map("cook_time")
+  difficulty   String   @default("easy") // easy / medium / hard
+  calories     Int
+  protein      Float
+  carbs        Float
+  fat          Float
+  fiber        Float    @default(0)
+  isFavorited  Boolean  @default(false) @map("is_favorited")
+  cookCount    Int      @default(0) @map("cook_count")
+  lastCookedAt DateTime? @map("last_cooked_at")
+  isSystem     Boolean  @default(false) @map("is_system")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user             User?            @relation(fields: [userId], references: [id])
+  cookingRecords   CookingRecord[]
+  dayPlanBreakfast DayPlan[]        @relation("BreakfastRecipe")
+  dayPlanLunch     DayPlan[]        @relation("LunchRecipe")
+  dayPlanDinner    DayPlan[]        @relation("DinnerRecipe")
+
+  @@map("recipes")
+}
+
+// ==================== 做饭记录 ====================
+
+model CookingRecord {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  recipeId       String   @map("recipe_id")
+  date           DateTime
+  mealType       String   @map("meal_type") // breakfast / lunch / dinner / snack
+  isFinished     Boolean  @default(true) @map("is_finished")
+  rating         Int?
+  note           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+
+  @@map("cooking_records")
+}
+
+// ==================== 周计划 & 日计划 ====================
+
+model MealPlan {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  weekStart DateTime @map("week_start")
+  style     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user     User       @relation(fields: [userId], references: [id])
+  dayPlans DayPlan[]
+  shoppingLists ShoppingList[]
+
+  @@map("meal_plans")
+}
+
+model DayPlan {
+  id          String   @id @default(uuid())
+  mealPlanId  String   @map("meal_plan_id")
+  date        DateTime
+  dayOfWeek   Int      @map("day_of_week") // 1-7
+  breakfastId String?  @map("breakfast_id")
+  lunchId     String?  @map("lunch_id")
+  dinnerId    String?  @map("dinner_id")
+  isLocked    Boolean  @default(false) @map("is_locked")
+  lockedMeals String   @default("[]") @map("locked_meals")
+
+  mealPlan  MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  breakfast Recipe?  @relation("BreakfastRecipe", fields: [breakfastId], references: [id])
+  lunch     Recipe?  @relation("LunchRecipe", fields: [lunchId], references: [id])
+  dinner    Recipe?  @relation("DinnerRecipe", fields: [dinnerId], references: [id])
+
+  @@map("day_plans")
+}
+
+// ==================== 库存 ====================
+
+model Inventory {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  name         String
+  quantity     Float
+  unit         String   @default("g")
+  purchaseDate DateTime? @map("purchase_date")
+  expiryDate   DateTime? @map("expiry_date")
+  category     String?  // meat / vegetable / staple / seasoning / dairy / fruit / other
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("inventory")
+}
+
+// ==================== 购物清单 ====================
+
+model ShoppingList {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  mealPlanId String?  @map("meal_plan_id")
+  name       String
+  quantity   Float
+  unit       String   @default("g")
+  isPurchased Boolean @default(false) @map("is_purchased")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id])
+  mealPlan MealPlan? @relation(fields: [mealPlanId], references: [id])
+
+  @@map("shopping_lists")
+}
+
+// ==================== 体重记录 ====================
+
+model WeightRecord {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  date      DateTime
+  weight    Float
+  bodyFat   Float?   @map("body_fat")
+  waist     Float?
+  hip       Float?
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("weight_records")
+}
+
+// ==================== 饮水记录 ====================
+
+model WaterRecord {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  date      DateTime
+  amountMl  Int      @map("amount_ml")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("water_records")
+}
+
+// ==================== 提醒设置 ====================
+
+model ReminderSetting {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  breakfastTime   String? @map("breakfast_time")   // HH:mm
+  lunchTime       String? @map("lunch_time")
+  dinnerTime      String? @map("dinner_time")
+  waterInterval   Int?    @map("water_interval")   // 分钟
+  weighTime       String? @map("weigh_time")
+  groceryDay      Int?    @map("grocery_day")      // 1-7
+  stockAlert      Boolean @default(true) @map("stock_alert")
+  isEnabled       Boolean @default(true) @map("is_enabled")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reminder_settings")
+}
+
+// ==================== 预算 ====================
+
+model Budget {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  weeklyBudget  Float?   @map("weekly_budget")
+  monthlyBudget Float?   @map("monthly_budget")
+  weeklySpent   Float    @default(0) @map("weekly_spent")
+  monthlySpent  Float    @default(0) @map("monthly_spent")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("budgets")
+}
+
+// ==================== 成就 ====================
+
+model Achievement {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String    // streak_7d / cook_100 / water_30d / calorie_control / weight_loss_5kg ...
+  level     Int       @default(1)
+  progress  Int       @default(0)
+  earnedAt  DateTime? @map("earned_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("achievements")
+}
